@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taxi Details</title>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Taxi Button Example</h1>
+    <button id="taxiButton">Taxi</button>
+
+    <!-- Modal -->
+    <div id="taxiModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="taxiDetails">
+                <!-- Taxi details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById("taxiModal");
+        const btn = document.getElementById("taxiButton");
+        const span = document.getElementsByClassName("close")[0];
+        const detailsDiv = document.getElementById("taxiDetails");
+
+        // Open modal and fetch form content
+        btn.onclick = function () {
+            fetch('process.php')
+                .then(res => res.text())
+                .then(data => {
+                    detailsDiv.innerHTML = data;
+                    modal.style.display = "block";
+
+                    // Attach submit listener to dynamically loaded form
+                    const form = document.getElementById('taxiForm');
+                    form.addEventListener('submit', function (event) {
+                        event.preventDefault();
+                        const formData = new FormData(form);
+
+                        fetch('process.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(res => res.json())
+                            .then(response => {
+                                alert(response.message);
+                                if (response.success) {
+                                    modal.style.display = "none";
+                                }
+                            })
+                            .catch(err => {
+                                alert("Error: " + err);
+                            });
+                    });
+                });
+        };
+
+        // Close modal
+        function confirmClose() {
+            const checkbox = document.querySelector('input[name="contacted"]');
+            if (checkbox && !checkbox.checked) {
+                return confirm("Please check the 'contacted' field");
+            }
+            return true;
+        }
+
+        span.onclick = () => {
+            const checkbox = document.querySelector('input[name="contacted"]');
+            if (checkbox && !checkbox.checked) {
+                alert("Please check the 'Contacted' box before closing the form.");
+                return;
+            }
+            modal.style.display = "none";
+        };
+
+        window.onclick = event => {
+            if (event.target == modal) {
+                const checkbox = document.querySelector('input[name="contacted"]');
+                if (checkbox && !checkbox.checked) {
+                    alert("Please check the 'Contacted' box before closing the form.");
+                    return;
+                }
+                modal.style.display = "none";
+            }
+        };
+
+    </script>
+</body>
+
+</html>
